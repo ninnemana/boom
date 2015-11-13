@@ -107,7 +107,7 @@ func (b *Boomer) incProgress() {
 
 // Run makes all the requests, prints the summary. It blocks until
 // all work is done.
-func (b *Boomer) Run() {
+func (b *Boomer) Run() *Report {
 	b.results = make(chan *result, b.N)
 	b.startProgress()
 
@@ -115,8 +115,11 @@ func (b *Boomer) Run() {
 	b.runWorkers()
 	b.finalizeProgress()
 
-	newReport(b.N, b.results, b.Output, time.Now().Sub(start)).finalize()
+	report := newReport(b.N, b.results, b.Output, time.Now().Sub(start))
+	report.finalize()
 	close(b.results)
+
+	return report
 }
 
 func (b *Boomer) runWorker(wg *sync.WaitGroup, ch chan *http.Request) {
